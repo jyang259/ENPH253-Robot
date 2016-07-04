@@ -1,23 +1,3 @@
-/*
-Code for claw mechanism 
-1. Arm turns to face direction of passenger
-2. Arm lowers to level of passenger
-3. Arm extends forward until passenger is within reach
-4. Claw closes around passenger
-*/
-
-#include <Servo.h>
-
-int microSwitch = 1//Microswitch for passenger detection
-
-Servo servoArm; 
-Servo servoClaw;
-
-int servoArmPin = 2;
-int servoClawPin = 3;
-
-int posArm = 0; //servo position in degrees
-
 void setup() {
   // put your setup code here, to run once:
   servoArm.attach(servoArmPin);
