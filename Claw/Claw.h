@@ -11,6 +11,7 @@
 class Claw
 {
 	public:
+		Claw(int pin);
 		void open();
 		void close();
 	private: 

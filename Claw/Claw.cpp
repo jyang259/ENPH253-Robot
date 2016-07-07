@@ -10,6 +10,7 @@
 //Input: pin input for claw servo
 Claw::Claw(int pin)
 {
+	pinMode(pin, OUTPUT);
 	_pinClaw = pin;
 }
 
@@ -33,9 +34,9 @@ void Claw::close()
 	Servo servoClaw;
 	servoClaw.attach(_pinClaw);
 
-	//Open claw fully
+	//Close claw around passenger
 	servoClaw.write(90);
 
-	//hold claw in open position
+	//hold claw in closed position
 	servoClaw.detach();
 }
