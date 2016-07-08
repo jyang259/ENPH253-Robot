@@ -1,44 +1,85 @@
-/*
-Code for claw mechanism 
-*/
+#include <LiquidCrystal.h>
+//#include <Claw.h>
+#include <phys253.h>
 
-#include <Servo.h>
-
-int servoArm = 1 //Servo for telescoping arm
-int servoClaw = 2 //Servo for claw mechanism 
-
-int microSwitch = 2//Microswitch for passenger detection
-
-Servo servo; 
-
-int pos = 0; //servo position in degrees
+//Claw claw(0);
+int posClaw = 0;
 
 void setup() {
-  // put your setup code here, to run once:
-  servo.attach(servoPin);
-  pinMode(microSwitch, INPUT_PULLUP);
+    #include <phys253setup.txt>
+    ServoTimer2 RCServo0();
+    //RCServo0.attach(0);
+    pinMode(0, OUTPUT);
+    Serial.begin(9600);
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
-  //scan from 0 to 180 degrees
-  
-  /*for(pos = 0; pos < 180; pos++){
-    servo.write(pos);
+  //claw.open();
+  //delay(100);
+  //claw.close();
+  //delay(100);
+    // put your main code here, to run repeatedly:
+
+  //Close claw around passenger
+  for(posClaw = 0; posClaw <= 180; posClaw++){
+    RCServo0.write(posClaw);
+    LCD.clear();
+    LCD.print(posClaw);
     delay(15);
   }
   
-  //scan back from 180 to 0 degrees
-  for(pos = 180; pos > 0; pos--){
-    servo.write(pos);
-    delay(15);
-  }*/
+  delay(1000);
   
-  //microswitch
-  if(digitalRead(microSwitch) == HIGH){
-    for(pos=180; pos < 90; pos--){
-      
-    }
+  for(posClaw = 180; posClaw >= 0; posClaw--){
+    RCServo0.write(posClaw);
+    LCD.clear();
+    LCD.print(posClaw);
+    delay(15);
   }
   
+  delay(1000);
+  //hold claw in closed position
+  //RCServo0.detach();
+}
+
+OR ----------------------------------------
+
+#include <LiquidCrystal.h>
+//#include <Claw.h>
+#include <phys253.h>
+
+//Claw claw(0);
+int posClaw = 0;
+
+void setup() {
+    #include <phys253setup.txt>
+    ServoTimer2 RCServo0();
+    //RCServo0.attach(0);
+    pinMode(0, OUTPUT);
+    Serial.begin(9600);
+}
+
+void loop() {
+  // put your main code here, to run repeatedly:
+  //claw.open();
+  //delay(100);
+  //claw.close();
+  //delay(100);
+    // put your main code here, to run repeatedly:
+
+  //Close claw around passenger
+    RCServo0.write(180);
+    LCD.clear();
+    LCD.print(180);
+    delay(1000);
+  
+    RCServo0.write(0);
+    LCD.clear();
+    LCD.print(posClaw);
+    delay(1000);
+  
+//    delay(1000);
+  //hold claw in closed position
+  //RCServo0.detach();
 }

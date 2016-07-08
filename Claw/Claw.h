@@ -14,8 +14,8 @@ class Claw
 		Claw(int pin);
 		void open();
 		void close();
-	private: 
-		int _pinClaw;
+	//private: 
+		//int _pinClaw;
 };
 
 #endif

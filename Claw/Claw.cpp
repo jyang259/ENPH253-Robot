@@ -4,39 +4,40 @@
 */
 
 #include "Arduino.h"
+#include "LiquidCrystal.h"
+#include "phys253.h"
 #include "Claw.h"
-#include "Servo.h"
+// #include "Servo.h"
 
 //Input: pin input for claw servo
-Claw::Claw(int pin)
+Claw::Claw()
 {
-	pinMode(pin, OUTPUT);
-	_pinClaw = pin;
+	//no variables
 }
 
 //Open claw fully and hold 
 void Claw::open()
 {
-	Servo servoClaw;
-	servoClaw.attach(_pinClaw);
+	ServoTimer2 RCServo0();
 
 	//Open claw fully
-	servoClaw.write(180);
+	RCServo0.write(180);
+	LCD.print(RCServo0.read());
 
 	//hold claw in open position
-	servoClaw.detach();
+	RCServo0.detach();
 
 }
 
 //Close claw around passenger and hold 
 void Claw::close()
 {
-	Servo servoClaw;
-	servoClaw.attach(_pinClaw);
+	ServoTimer2 RCServo0();
 
 	//Close claw around passenger
-	servoClaw.write(90);
+	RCServo0.write(90);
+	LCD.print(RCServo0.read());
 
 	//hold claw in closed position
-	servoClaw.detach();
+	RCServo0.detach();
 }
