@@ -17,7 +17,7 @@ double locationStrongestIRSignal_arm = 0;
 
 int nextStep_height = 0;
 int pos = 0;
-double thresholdIRSignal = 0.6;
+double thresholdIRSignal = 3.0;
 
 
 void setup() {
@@ -45,11 +45,11 @@ void loop() {
 
   //Base rotation - Find the direction of the strongest IR signal
   //Left side
-  // if(analogRead(irPin_left) > thresholdIRSignal){
-  if (analogRead(irPin_arm) * 5.0 / 1024.0 > 1.0) {
+      //GOOD--------------
+  if (analogRead(irPin_left) * 5.0 / 1024.0 > thresholdIRSignal) {
     RCServo0.write(0);
     LCD.clear();
-    LCD.print("1");
+    LCD.print("Passed left");
     delay(1000);
     //------
     for (pos = 0; pos <= 90; pos++) {
@@ -62,18 +62,12 @@ void loop() {
         locationStrongestIRSignal_arm = pos;
         LCD.setCursor(0, 1);
         LCD.print(locationStrongestIRSignal_arm);
+        LCD.setCursor(8, 1);
+        LCD.print(strongestIRSignal_arm);
       }
       delay(500);
     }
     //------
-    /*for(pos = 0; pos <= 90; pos++){
-      RCServo0.write(pos);
-      currentIRSignal_arm = analogRead(irPin_arm)*5/1024;
-      if(currentIRSignal_arm > strongestIRSignal_arm){
-        strongestIRSignal_arm = currentIRSignal_arm;
-        locationStrongestIRSignal_arm = pos;
-      }
-    }*/
     nextStep_height = 1;
     LCD.clear();
     LCD.print("Made it!");
@@ -84,30 +78,48 @@ void loop() {
     //LCD.clear();
     //LCD.print("Strong IR left");
   }
-  //}
+  //GOOD--------------
+  
+
   //Right side
-  /*if(analogRead(irPin_right) > thresholdIRSignal){
+  if (analogRead(irPin_right) * 5.0 / 1024.0 > thresholdIRSignal) {
     RCServo0.write(180);
-    for(pos = 180; pos >= 90; pos--){
+    LCD.clear();
+    LCD.print("Passed right");
+    delay(1000);
+    //------
+    for (pos = 180; pos >= 90; pos--) {
       RCServo0.write(pos);
-      currentIRSignal_arm = analogRead(irPin_arm);
-      if(currentIRSignal_arm > strongestIRSignal_arm){
+      LCD.clear();
+      LCD.print(pos);
+      currentIRSignal_arm = analogRead(irPin_arm) * 5.0 / 1024.0;
+      if (currentIRSignal_arm > strongestIRSignal_arm) {
         strongestIRSignal_arm = currentIRSignal_arm;
         locationStrongestIRSignal_arm = pos;
+        LCD.setCursor(0, 1);
+        LCD.print(locationStrongestIRSignal_arm);
+        LCD.setCursor(8, 1);
+        LCD.print(strongestIRSignal_arm);
       }
+      delay(500);
     }
+    //------
     nextStep_height = 1;
-    RCServo0.write(locationStrongestIRSignal_arm);
     LCD.clear();
-    LCD.print("Strong IR right");
+    LCD.print("Made it!");
     delay(1000);
-  }*/
+    LCD.setCursor(5, 0);
+    LCD.print(locationStrongestIRSignal_arm);
+    RCServo0.write(locationStrongestIRSignal_arm);
+    //LCD.clear();
+    //LCD.print("Strong IR left");
+  }
 
-  /*if(nextStep_height == 1){
+  if (nextStep_height == 1) {
     //Arm height - lower arm to height of passenger
-    RCServo1.write(90);
+    RCServo1.write(45);
     LCD.clear();
-    LCD.print("height to 90");
+    LCD.print("Height change");
     delay(1000);
 
     //TODO - Arm extension
@@ -116,12 +128,12 @@ void loop() {
     //Claw closure - picking up passenger
     RCServo2.write(100);
     LCD.clear();
-    LCD.print("claw closing to 100");
+    LCD.print("claw closing");
     delay(1000);
 
     //
     //hold claw in closed position
-    RCServo2.detach();
-  }*/
+    //RCServo2.detach();
+  }
 
 }
