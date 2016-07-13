@@ -7,18 +7,27 @@
 int irPin_right = 0;
 int irPin_left = 1;
 int irPin_arm = 2;
+int detectionPin_passenger = 0;
+int motorPin_armExtend = 0;
 
 //IR detection on left and right of vehicle
+double leftIRSignal = 0;
+double rightIRSignal = 0;
 
 //IR detection on arm
 double currentIRSignal_arm = 0;
 double strongestIRSignal_arm = 0;
 double locationStrongestIRSignal_arm = 0;
 
-int nextStep_height = 0;
-int pos = 0;
-double thresholdIRSignal = 3.0;
+//checkpoint tokens
+int nextStep_height = 0; //aimed at passenger, adjust arm height
+int nextStep_extend = 0; //arm height adjusted, extend arm
+int nextStep_clawClose = 0; //arm extended, close claw
+int nextStep_basket = 0; //passenger picked up, return to basket
 
+int pos = 0; //variable servo angle
+int pos_basket = 45; //position of the basket (servo angle)
+double thresholdIRSignal = 3.0;
 
 void setup() {
 #include <phys253setup.txt>
@@ -31,27 +40,33 @@ void setup() {
   RCServo1.write(180); //Arm starts up
   RCServo2.write(180); //Claw starts open
   //RCServo0.attach(0);
+  //Set pin mode for microswitch passenger detection
+  pinMode(detectionPin_passenger, INPUT);
+  digitalWrite(detectionPin_passenger, LOW);
   //pinMode(0, OUTPUT);
   Serial.begin(9600);
 }
 
 void loop() {
 
-  //locationIRSignal = RCServo0.read();
+  //get initial arm IR signal 
   strongestIRSignal_arm = analogRead(irPin_arm) * 5.0 / 1024.0;
   LCD.clear();
   LCD.print(strongestIRSignal_arm);
   delay(1000);
 
+  //read in IR detection from side detectors 
+  leftIRSignal = analogRead(irPin_left) * 5.0 / 1024.0;
+  rightIRSignal = analogRead(irPin_right) * 5.0 / 1024.0;
+  //at a certain strength, the car will stop...
+
   //Base rotation - Find the direction of the strongest IR signal
   //Left side
-      //GOOD--------------
-  if (analogRead(irPin_left) * 5.0 / 1024.0 > thresholdIRSignal) {
+  if (leftIRSignal > thresholdIRSignal) {
     RCServo0.write(0);
     LCD.clear();
     LCD.print("Passed left");
     delay(1000);
-    //------
     for (pos = 0; pos <= 90; pos++) {
       RCServo0.write(pos);
       LCD.clear();
@@ -67,10 +82,9 @@ void loop() {
       }
       delay(500);
     }
-    //------
     nextStep_height = 1;
     LCD.clear();
-    LCD.print("Made it!");
+    LCD.print("Left - Made it!");
     delay(1000);
     LCD.setCursor(5, 0);
     LCD.print(locationStrongestIRSignal_arm);
@@ -78,16 +92,14 @@ void loop() {
     //LCD.clear();
     //LCD.print("Strong IR left");
   }
-  //GOOD--------------
   
 
   //Right side
-  if (analogRead(irPin_right) * 5.0 / 1024.0 > thresholdIRSignal) {
+  if (rightIRSignal > thresholdIRSignal) {
     RCServo0.write(180);
     LCD.clear();
     LCD.print("Passed right");
     delay(1000);
-    //------
     for (pos = 180; pos >= 90; pos--) {
       RCServo0.write(pos);
       LCD.clear();
@@ -103,10 +115,9 @@ void loop() {
       }
       delay(500);
     }
-    //------
     nextStep_height = 1;
     LCD.clear();
-    LCD.print("Made it!");
+    LCD.print("Right - Made it!");
     delay(1000);
     LCD.setCursor(5, 0);
     LCD.print(locationStrongestIRSignal_arm);
@@ -123,17 +134,28 @@ void loop() {
     delay(1000);
 
     //TODO - Arm extension
-    //microswitch controlling when claw closes
+    do{
+      motor.speed(motorPin_armExtend, 25);
+    }while(digitalRead(detectionPin_passenger) == LOW);
 
-    //Claw closure - picking up passenger
-    RCServo2.write(100);
+    //microswitch controlling when claw closes
+    if(digitalRead(detectionPin_passenger) == HIGH){
+      //Claw closure - picking up passenger
+      RCServo2.write(90);
+      LCD.clear();
+      LCD.print("claw closing");
+      delay(1000);
+
+    }
+  }
+
+  if(nextStep_basket == 1){
+    //Turn base to side of basket 
+    RCServo0.write();
     LCD.clear();
-    LCD.print("claw closing");
+    LCD.print("turning to basket");
     delay(1000);
 
-    //
-    //hold claw in closed position
-    //RCServo2.detach();
   }
 
 }
