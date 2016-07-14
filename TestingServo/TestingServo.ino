@@ -17,7 +17,7 @@ double locationStrongestIRSignal_arm = 0;
 
 int nextStep_height = 0;
 int pos = 0;
-double thresholdIRSignal = 3.0;
+double thresholdIRSignal = 0.5;
 
 
 void setup() {
@@ -26,17 +26,28 @@ void setup() {
   ServoTimer2 RCServo0; //Controls the rotation and position of the base
   ServoTimer2 RCServo1; //Controls ascending and descending of arm
   ServoTimer2 RCServo2; //Controls claw actuation
+
+ // RCServo0.attach(0);
+  //RCServo1.attach(1);
+  //RCServo2.attach(2);
   //Initial positions
   RCServo0.write(90); //Position of the base starts in the middle
   RCServo1.write(180); //Arm starts up
   RCServo2.write(180); //Claw starts open
-  //RCServo0.attach(0);
+
+  //Set pin mode for microswitch passenger detection
+  //pinMode(detectionPin_passenger, INPUT);
+  //digitalWrite(detectionPin_passenger, LOW);
   //pinMode(0, OUTPUT);
   Serial.begin(9600);
 }
 
 void loop() {
-
+  //Check if servos are properly attached
+  //LCD.clear();
+  //LCD.print(RCServo0.attached());
+  //LCD.setCursor(0, 6);
+  //LCD.print(RCServo1.attached());
   //locationIRSignal = RCServo0.read();
   strongestIRSignal_arm = analogRead(irPin_arm) * 5.0 / 1024.0;
   LCD.clear();
@@ -46,7 +57,7 @@ void loop() {
   //Base rotation - Find the direction of the strongest IR signal
   //Left side
       //GOOD--------------
-  if (analogRead(irPin_left) * 5.0 / 1024.0 > thresholdIRSignal) {
+  if (analogRead(irPin_arm) * 5.0 / 1024.0 > thresholdIRSignal) {
     RCServo0.write(0);
     LCD.clear();
     LCD.print("Passed left");
@@ -80,7 +91,7 @@ void loop() {
   }
   //GOOD--------------
   
-
+/*
   //Right side
   if (analogRead(irPin_right) * 5.0 / 1024.0 > thresholdIRSignal) {
     RCServo0.write(180);
@@ -104,6 +115,8 @@ void loop() {
       delay(500);
     }
     //------
+
+
     nextStep_height = 1;
     LCD.clear();
     LCD.print("Made it!");
@@ -114,26 +127,28 @@ void loop() {
     //LCD.clear();
     //LCD.print("Strong IR left");
   }
-
+*/  
   if (nextStep_height == 1) {
     //Arm height - lower arm to height of passenger
-    RCServo1.write(45);
+    RCServo1.write(0);
     LCD.clear();
     LCD.print("Height change");
     delay(1000);
-
+    nextStep_height = 0;
     //TODO - Arm extension
     //microswitch controlling when claw closes
-
+/*
     //Claw closure - picking up passenger
     RCServo2.write(100);
     LCD.clear();
     LCD.print("claw closing");
     delay(1000);
-
+*/
     //
     //hold claw in closed position
     //RCServo2.detach();
+    RCServo0.write(90); //Position of the base starts in the middle
+    RCServo1.write(180); //Arm starts up
   }
 
 }

@@ -1,8 +1,6 @@
 #include <LiquidCrystal.h>
-//#include <Claw.h>
 #include <phys253.h>
 
-//Claw claw(0);
 //Pin allocations
 int irPin_right = 0;
 int irPin_left = 1;
@@ -38,11 +36,15 @@ void setup() {
   ServoTimer2 RCServo0; //Controls the rotation and position of the base
   ServoTimer2 RCServo1; //Controls ascending and descending of arm
   ServoTimer2 RCServo2; //Controls claw actuation
+
+  RCServo0.attach(0);
+  RCServo1.attach(1);
+  RCServo2.attach(2);
   //Initial positions
   RCServo0.write(90); //Position of the base starts in the middle
   RCServo1.write(180); //Arm starts up
   RCServo2.write(180); //Claw starts open
-  //RCServo0.attach(0);
+
   //Set pin mode for microswitch passenger detection
   pinMode(detectionPin_passenger, INPUT);
   digitalWrite(detectionPin_passenger, LOW);
