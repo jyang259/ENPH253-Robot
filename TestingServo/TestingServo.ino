@@ -17,23 +17,23 @@ double locationStrongestIRSignal_arm = 0;
 
 int nextStep_height = 0;
 int pos = 0;
-double thresholdIRSignal = 0.5;
+double thresholdIRSignal = 0.2;
 
 
 void setup() {
 #include <phys253setup.txt>
 
-  ServoTimer2 RCServo0; //Controls the rotation and position of the base
+  //ServoTimer2 RCServo0; //Controls the rotation and position of the base
   ServoTimer2 RCServo1; //Controls ascending and descending of arm
-  ServoTimer2 RCServo2; //Controls claw actuation
+  //ServoTimer2 RCServo2; //Controls claw actuation
 
  // RCServo0.attach(0);
   //RCServo1.attach(1);
   //RCServo2.attach(2);
   //Initial positions
-  RCServo0.write(90); //Position of the base starts in the middle
-  RCServo1.write(180); //Arm starts up
-  RCServo2.write(180); //Claw starts open
+  //RCServo0.write(90); //Position of the base starts in the middle
+  RCServo1.write(0); //Arm starts up
+  //RCServo2.write(50); //Claw starts open
 
   //Set pin mode for microswitch passenger detection
   //pinMode(detectionPin_passenger, INPUT);
@@ -42,6 +42,17 @@ void setup() {
   Serial.begin(9600);
 }
 
+void loop(){
+    RCServo1.write(0);
+    delay(1000);
+   // LCD.clear();
+    //LCD.print("open");
+    RCServo1.write(90);
+    LCD.clear();
+    LCD.print("claw closing");
+    delay(1000);
+}
+/*
 void loop() {
   //Check if servos are properly attached
   //LCD.clear();
@@ -90,8 +101,7 @@ void loop() {
     //LCD.print("Strong IR left");
   }
   //GOOD--------------
-  
-/*
+
   //Right side
   if (analogRead(irPin_right) * 5.0 / 1024.0 > thresholdIRSignal) {
     RCServo0.write(180);
@@ -127,28 +137,30 @@ void loop() {
     //LCD.clear();
     //LCD.print("Strong IR left");
   }
-*/  
+  
   if (nextStep_height == 1) {
     //Arm height - lower arm to height of passenger
-    RCServo1.write(0);
+    RCServo1.write(25);
     LCD.clear();
     LCD.print("Height change");
     delay(1000);
     nextStep_height = 0;
     //TODO - Arm extension
     //microswitch controlling when claw closes
-/*
+
     //Claw closure - picking up passenger
+    RCServo2.write(0);
+    delay(1000);
     RCServo2.write(100);
     LCD.clear();
     LCD.print("claw closing");
     delay(1000);
-*/
+
     //
     //hold claw in closed position
     //RCServo2.detach();
     RCServo0.write(90); //Position of the base starts in the middle
     RCServo1.write(180); //Arm starts up
   }
-
-}
+  
+}*/

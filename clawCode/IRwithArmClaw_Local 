@@ -22,12 +22,10 @@ int nextStep_armLower = 0; //aimed at passenger, adjust arm height
 int nextStep_extend = 0; //arm height adjusted, extend arm
 int nextStep_clawClose = 0; //arm extended, close claw
 int nextStep_armLift = 0; //claw closed, lift arm back up
-int nextStep_findBasket = 0; //passenger picked up, find basket
-int nextStep_dropInBasket = 0; //basket found, drop passenger in
+int nextStep_clawOpen = 0; //arm lifted, open claw
 int reset_arm = 0; //bring back arm and claw to initial positions
 
 int pos = 0; //variable servo angle
-int pos_basket = 45; //position of the basket (servo angle)
 double thresholdIRSignal = 3.0;
 
 void setup() {
@@ -37,13 +35,13 @@ void setup() {
   ServoTimer2 RCServo1; //Controls ascending and descending of arm
   ServoTimer2 RCServo2; //Controls claw actuation
 
-  RCServo0.attach(0);
-  RCServo1.attach(1);
-  RCServo2.attach(2);
+  //RCServo0.attach(0);
+  //RCServo1.attach(1);
+  //RCServo2.attach(2);
   //Initial positions
   RCServo0.write(90); //Position of the base starts in the middle
-  RCServo1.write(180); //Arm starts up
-  RCServo2.write(180); //Claw starts open
+  RCServo1.write(0); //Arm starts up
+  RCServo2.write(50); //Claw starts open
 
   //Set pin mode for microswitch passenger detection
   pinMode(detectionPin_passenger, INPUT);
@@ -153,7 +151,7 @@ void loop() {
     //microswitch controlling when claw closes
   if(nextStep_clawClose == 1){
     //Claw closure - picking up passenger
-    RCServo2.write(90);
+    RCServo2.write(115);
     LCD.clear();
     LCD.print("claw closing");
     delay(1000);
@@ -162,39 +160,29 @@ void loop() {
     }
 
   if(nextStep_armLift == 1){
-    RCServo1.write(90);
+    RCServo1.write(0);
     LCD.clear();
     LCD.print("Height change");
     delay(1000);
     nextStep_armLift = 0;
-    nextStep_basket = 1;
+    nextStep_clawOpen = 1;
   }
 
-  if(nextStep_findBasket == 1){
-    //Turn base to side of basket 
-    RCServo0.write(45);
+  if(nextStep_clawOpen == 1){
+    //Claw closure - picking up passenger
+    RCServo2.write(50);
     LCD.clear();
-    LCD.print("turning to basket");
+    LCD.print("claw opening");
     delay(1000);
-    nextStep_findBasket = 0;
-    nextStep_dropInBasket = 1;
-  }
-
-  if(nextStep_dropInBasket == 1){
-    //open the claw to drop the passenger in the basket
-    RCServo2.write(180);
-    LCD.clear();
-    LCD.print("letting go");
-    delay(1000);
-    nextStep_dropInBasket = 0;
     reset_arm = 1;
+    nextStep_clawOpen = 0;
   }
 
   if(reset_arm == 1){
     //rest arm, claw and base to initial positions
     RCServo0.write(90); //Position of the base starts in the middle
-    RCServo1.write(180); //Arm starts up
-    RCServo2.write(180); //Claw starts open
+    RCServo1.write(0); //Arm starts up
+    RCServo2.write(50); //Claw starts open
     reset_arm = 0;
   }
 }
