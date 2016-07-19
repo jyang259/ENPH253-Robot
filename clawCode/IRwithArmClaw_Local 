@@ -19,7 +19,7 @@ double locationStrongestIRSignal_arm = 0;
 
 //checkpoint tokens
 int nextStep_armLower = 0; //aimed at passenger, adjust arm height
-int nextStep_extend = 0; //arm height adjusted, extend arm
+//int nextStep_extend = 0; //arm height adjusted, extend arm
 int nextStep_clawClose = 0; //arm extended, close claw
 int nextStep_armLift = 0; //claw closed, lift arm back up
 int nextStep_clawOpen = 0; //arm lifted, open claw
@@ -135,10 +135,11 @@ void loop() {
     LCD.clear();
     LCD.print("Height change");
     delay(1000);
-    nextStep_extend = 1;
+    //nextStep_extend = 1;
+    nextStep_clawClose = 1;
     nextStep_armLower = 0 ;
   }
-
+/*
   if(nextStep_extend == 1){
       //Arm extension
     do{
@@ -147,7 +148,59 @@ void loop() {
     nextStep_clawClose = 1;
     nextStep_extend = 0;
   }
+*/
 
+  while(nextStep_clawClose == 1){
+    //microswitch controlling when claw closes
+    RCServo2.write(115);
+    LCD.clear();
+    LCD.print("claw closing");
+    delay(1000);
+
+    //if microswitch detects passenger, proceed to lifting arm up
+    if(digitalRead(detectionPin_passenger) == HIGH){
+      nextStep_armLift = 1;
+      nextStep_clawClose = 0;
+    }
+
+    //of microswitch does not detect passenger, readjust arm position
+    if(digitalRead(detectionPin_passenger) == LOW){
+      RCServo1.write(0);
+      RCServo2.write(50);
+      //try readjusting left first
+      LCD.clear();
+      LCD.print("retrying left");
+      RCServo0.write(55);
+      //close claw again
+      RCServo2.write(115);
+      if(digitalRead(detectionPin_passenger) == HIGH){
+        nextStep_armLift = 1;
+        nextStep_clawClose = 0;
+      }
+
+      if(digitalRead(detectionPin_passenger) == LOW){
+        RCServo1.write(0);
+        RCServo2.write(50);
+        //final readjustment right
+        LCD.clear();
+        LCD.print("retrying right");
+        RCServo0.write(125);
+        //close claw again
+        RCServo2.write(115);
+        if(digitalRead(detectionPin_passenger) == HIGH){
+          nextStep_armLift = 1;
+          nextStep_clawClose = 0;
+        }
+      }
+    }
+  }
+
+//if no passenger detected by microswitch after 3 tries, reset arm and keep looking
+  if(nextStep_armLift == 0){
+    reset_arm = 1;
+    nextStep_clawClose = 0;
+  }
+/*
     //microswitch controlling when claw closes
   if(nextStep_clawClose == 1){
     //Claw closure - picking up passenger
@@ -158,6 +211,7 @@ void loop() {
     nextStep_armLift = 1;
     nextStep_clawClose = 0;
     }
+*/
 
   if(nextStep_armLift == 1){
     RCServo1.write(0);
