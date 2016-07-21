@@ -2,11 +2,11 @@
 #include <phys253.h>
 
 //Pin allocations
-int irPin_right = 0;
-int irPin_left = 1;
-int irPin_arm = 2;
-int detectionPin_passenger = 0;
-int motorPin_armExtend = 0;
+int irPin_right = 0; //ir pin - analog input
+int irPin_left = 1; //ir pin - analog input
+int irPin_arm = 2; //ir pin - analog input
+int detectionPin_passenger = 0; //microswitch pin - digital input 
+//int motorPin_armExtend = 0; 
 
 //IR detection on left and right of vehicle
 double leftIRSignal = 0;
@@ -38,6 +38,7 @@ void setup() {
   //RCServo0.attach(0);
   //RCServo1.attach(1);
   //RCServo2.attach(2);
+
   //Initial positions
   RCServo0.write(90); //Position of the base starts in the middle
   RCServo1.write(0); //Arm starts up
@@ -62,7 +63,7 @@ void loop() {
   leftIRSignal = analogRead(irPin_left) * 5.0 / 1024.0;
   rightIRSignal = analogRead(irPin_right) * 5.0 / 1024.0;
   //at a certain strength, the car will stop...
-
+  //TODO - how to determine side? ex. if left > thresh, left = 1 ? 
   //Base rotation - Find the direction of the strongest IR signal
   //Left side
   if (leftIRSignal > thresholdIRSignal) {
@@ -129,8 +130,8 @@ void loop() {
     //LCD.print("Strong IR left");
   }
 
+  //Arm height - lower arm to height of passenger
   if (nextStep_armLower == 1) {
-    //Arm height - lower arm to height of passenger
     RCServo1.write(45);
     LCD.clear();
     LCD.print("Height change");
@@ -139,6 +140,7 @@ void loop() {
     nextStep_clawClose = 1;
     nextStep_armLower = 0 ;
   }
+
 /*
   if(nextStep_extend == 1){
       //Arm extension
@@ -150,12 +152,12 @@ void loop() {
   }
 */
 
+//microswitch controlling when claw closes
   while(nextStep_clawClose == 1){
-    //microswitch controlling when claw closes
     RCServo2.write(115);
     LCD.clear();
     LCD.print("claw closing");
-    delay(1000);
+    delay(2000);
 
     //if microswitch detects passenger, proceed to lifting arm up
     if(digitalRead(detectionPin_passenger) == HIGH){
@@ -173,6 +175,8 @@ void loop() {
       RCServo0.write(55);
       //close claw again
       RCServo2.write(115);
+      delay(2000);
+
       if(digitalRead(detectionPin_passenger) == HIGH){
         nextStep_armLift = 1;
         nextStep_clawClose = 0;
@@ -200,6 +204,7 @@ void loop() {
     reset_arm = 1;
     nextStep_clawClose = 0;
   }
+
 /*
     //microswitch controlling when claw closes
   if(nextStep_clawClose == 1){
@@ -213,6 +218,7 @@ void loop() {
     }
 */
 
+//when passenger obtained, lift arm back up
   if(nextStep_armLift == 1){
     RCServo1.write(0);
     LCD.clear();
@@ -222,8 +228,10 @@ void loop() {
     nextStep_clawOpen = 1;
   }
 
+//TODO - where does arm turn to/go to?
+
+//When at destination, open claw
   if(nextStep_clawOpen == 1){
-    //Claw closure - picking up passenger
     RCServo2.write(50);
     LCD.clear();
     LCD.print("claw opening");
