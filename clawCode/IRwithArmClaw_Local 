@@ -6,11 +6,14 @@ int irPin_right = 0; //ir pin - analog input
 int irPin_left = 1; //ir pin - analog input
 int irPin_arm = 2; //ir pin - analog input
 int detectionPin_passenger = 0; //microswitch pin - digital input 
-//int motorPin_armExtend = 0; 
 
 //IR detection on left and right of vehicle
 double leftIRSignal = 0;
 double rightIRSignal = 0;
+int pickup_left = 0;
+int pickup_right = 0;
+int dropoff_left = 0;
+int dropoff_right = 0;
 
 //IR detection on arm
 double currentIRSignal_arm = 0;
@@ -19,9 +22,9 @@ double locationStrongestIRSignal_arm = 0;
 
 //checkpoint tokens
 int nextStep_armLower = 0; //aimed at passenger, adjust arm height
-//int nextStep_extend = 0; //arm height adjusted, extend arm
 int nextStep_clawClose = 0; //arm extended, close claw
 int nextStep_armLift = 0; //claw closed, lift arm back up
+int nextStep_dropOff = 0; //arm lifted, determine drop off side
 int nextStep_clawOpen = 0; //arm lifted, open claw
 int reset_arm = 0; //bring back arm and claw to initial positions
 
@@ -35,10 +38,6 @@ void setup() {
   ServoTimer2 RCServo1; //Controls ascending and descending of arm
   ServoTimer2 RCServo2; //Controls claw actuation
 
-  //RCServo0.attach(0);
-  //RCServo1.attach(1);
-  //RCServo2.attach(2);
-
   //Initial positions
   RCServo0.write(90); //Position of the base starts in the middle
   RCServo1.write(0); //Arm starts up
@@ -47,7 +46,7 @@ void setup() {
   //Set pin mode for microswitch passenger detection
   pinMode(detectionPin_passenger, INPUT);
   digitalWrite(detectionPin_passenger, LOW);
-  //pinMode(0, OUTPUT);
+
   Serial.begin(9600);
 }
 
@@ -56,107 +55,129 @@ void loop() {
   //get initial arm IR signal 
   strongestIRSignal_arm = analogRead(irPin_arm) * 5.0 / 1024.0;
   LCD.clear();
+  LCD.setCursor();
   LCD.print(strongestIRSignal_arm);
   delay(1000);
 
+  LCD.clear();
+  LCD.setCursor(0, 0);
+  LCD.print("Left:");
+  LCD.setCursor(0, 1);
+  LCD.print("Right:");
   //read in IR detection from side detectors 
   leftIRSignal = analogRead(irPin_left) * 5.0 / 1024.0;
+  LCD.setCursor(8, 0);
+  LCD.print(leftIRSignal);
   rightIRSignal = analogRead(irPin_right) * 5.0 / 1024.0;
-  //at a certain strength, the car will stop...
-  //TODO - how to determine side? ex. if left > thresh, left = 1 ? 
+  LCD.setCursor(8, 1);
+  LCD.print(rightIRSignal);
+  
+  //TODO: at a certain strength, the car will stop...
+
+  //Passenger on left side
+  if(leftIRSignal > thresholdIRSignal){
+    pickup_left = 1;
+  }
+
+  //Passenger on right side
+  if(rightIRSignal > thresholdIRSignal){
+    pickup_right = 1;
+  }
+  
   //Base rotation - Find the direction of the strongest IR signal
+  
   //Left side
-  if (leftIRSignal > thresholdIRSignal) {
+  if (pickup_left == 1) {
     RCServo0.write(0);
     LCD.clear();
-    LCD.print("Passed left");
+    LCD.print("Left side");
     delay(1000);
-    for (pos = 0; pos <= 90; pos++) {
+    for (pos = 0; pos <= 30; pos++) {
       RCServo0.write(pos);
       LCD.clear();
+      LCD.setCursor(0, 0);
+      LCD.print("Pos:");
+      LCD.setCursor(5, 0);
       LCD.print(pos);
       currentIRSignal_arm = analogRead(irPin_arm) * 5.0 / 1024.0;
       if (currentIRSignal_arm > strongestIRSignal_arm) {
         strongestIRSignal_arm = currentIRSignal_arm;
         locationStrongestIRSignal_arm = pos;
         LCD.setCursor(0, 1);
+        LCD.print("L:");
+        LCD.setCursor(3, 1);
         LCD.print(locationStrongestIRSignal_arm);
-        LCD.setCursor(8, 1);
+        LCD.setCursor(6, 1);
+        LCD.print("V:");
+        LCD.setCursor(9, 1);
         LCD.print(strongestIRSignal_arm);
       }
-      delay(500);
+      delay(200);
     }
     nextStep_armLower = 1;
+    left_side = 0;
     LCD.clear();
-    LCD.print("Left - Made it!");
+    LCD.print("Loc:");
     delay(1000);
     LCD.setCursor(5, 0);
     LCD.print(locationStrongestIRSignal_arm);
     RCServo0.write(locationStrongestIRSignal_arm);
-    //LCD.clear();
-    //LCD.print("Strong IR left");
   }
   
 
   //Right side
-  if (rightIRSignal > thresholdIRSignal) {
+  if (pickup_right == 1) {
     RCServo0.write(180);
     LCD.clear();
-    LCD.print("Passed right");
+    LCD.print("Right side");
     delay(1000);
-    for (pos = 180; pos >= 90; pos--) {
+    for (pos = 180; pos >= 150; pos--) {
       RCServo0.write(pos);
       LCD.clear();
+      LCD.setCursor(0, 0);
+      LCD.print("Pos:");
+      LCD.setCursor(5, 0);
       LCD.print(pos);
       currentIRSignal_arm = analogRead(irPin_arm) * 5.0 / 1024.0;
       if (currentIRSignal_arm > strongestIRSignal_arm) {
         strongestIRSignal_arm = currentIRSignal_arm;
         locationStrongestIRSignal_arm = pos;
         LCD.setCursor(0, 1);
+        LCD.print("L:");
+        LCD.setCursor(3, 1);
         LCD.print(locationStrongestIRSignal_arm);
-        LCD.setCursor(8, 1);
+        LCD.setCursor(6, 1);
+        LCD.print("V:");
+        LCD.setCursor(9, 1);
         LCD.print(strongestIRSignal_arm);
       }
-      delay(500);
+      delay(200);
     }
     nextStep_armLower = 1;
+    right_side = 0;
     LCD.clear();
-    LCD.print("Right - Made it!");
+    LCD.print("Loc:");
     delay(1000);
     LCD.setCursor(5, 0);
     LCD.print(locationStrongestIRSignal_arm);
     RCServo0.write(locationStrongestIRSignal_arm);
-    //LCD.clear();
-    //LCD.print("Strong IR left");
   }
 
   //Arm height - lower arm to height of passenger
   if (nextStep_armLower == 1) {
-    RCServo1.write(45);
     LCD.clear();
-    LCD.print("Height change");
+    LCD.print("Lowering arm");
     delay(1000);
-    //nextStep_extend = 1;
+    RCServo1.write(45);
     nextStep_clawClose = 1;
     nextStep_armLower = 0 ;
   }
 
-/*
-  if(nextStep_extend == 1){
-      //Arm extension
-    do{
-      motor.speed(motorPin_armExtend, 25);
-    }while(digitalRead(detectionPin_passenger) == LOW);
-    nextStep_clawClose = 1;
-    nextStep_extend = 0;
-  }
-*/
-
 //microswitch controlling when claw closes
   while(nextStep_clawClose == 1){
-    RCServo2.write(115);
     LCD.clear();
-    LCD.print("claw closing");
+    LCD.print("Claw closing");
+    RCServo2.write(115);
     delay(2000);
 
     //if microswitch detects passenger, proceed to lifting arm up
@@ -167,14 +188,15 @@ void loop() {
 
     //of microswitch does not detect passenger, readjust arm position
     if(digitalRead(detectionPin_passenger) == LOW){
-      RCServo1.write(0);
-      RCServo2.write(50);
+      RCServo1.write(0); //lift arm
+      RCServo2.write(50); //open claw
+      
       //try readjusting left first
       LCD.clear();
-      LCD.print("retrying left");
-      RCServo0.write(55);
-      //close claw again
-      RCServo2.write(115);
+      LCD.print("Retrying left");
+      RCServo0.write(55); //rotate base a bit left
+      RCServo1.write(45); //lower arm
+      RCServo2.write(115); //close claw again
       delay(2000);
 
       if(digitalRead(detectionPin_passenger) == HIGH){
@@ -183,14 +205,16 @@ void loop() {
       }
 
       if(digitalRead(detectionPin_passenger) == LOW){
-        RCServo1.write(0);
-        RCServo2.write(50);
+        RCServo1.write(0); //lift arm
+        RCServo2.write(50); //open claw
+        
         //final readjustment right
         LCD.clear();
-        LCD.print("retrying right");
-        RCServo0.write(125);
-        //close claw again
-        RCServo2.write(115);
+        LCD.print("Retrying right");
+        RCServo0.write(125); //rotate base a bit to the right
+        RCServo1.write(45); //lower arm
+        RCServo2.write(115); //close claw again
+        
         if(digitalRead(detectionPin_passenger) == HIGH){
           nextStep_armLift = 1;
           nextStep_clawClose = 0;
@@ -201,47 +225,84 @@ void loop() {
 
 //if no passenger detected by microswitch after 3 tries, reset arm and keep looking
   if(nextStep_armLift == 0){
+    LCD.clear();
+    LCD.print("Restart");
+    LCD.setCursor(0, 1);
+    LCD.print("No passenger");
     reset_arm = 1;
     nextStep_clawClose = 0;
   }
 
-/*
-    //microswitch controlling when claw closes
-  if(nextStep_clawClose == 1){
-    //Claw closure - picking up passenger
-    RCServo2.write(115);
-    LCD.clear();
-    LCD.print("claw closing");
-    delay(1000);
-    nextStep_armLift = 1;
-    nextStep_clawClose = 0;
-    }
-*/
+//TODO: continue with path following
 
 //when passenger obtained, lift arm back up
   if(nextStep_armLift == 1){
     RCServo1.write(0);
     LCD.clear();
-    LCD.print("Height change");
+    LCD.print("Lifting arm");
     delay(1000);
     nextStep_armLift = 0;
+    nextStep_dropOff = 1;
+  }
+
+//TODO - Determine direction... where does arm turn to/go to?
+//Jacob's node code?
+/*
+if(LEFT){
+  dropoff_left = 1;
+}
+if(RIGHT){
+  dropoff_right = 1;
+}
+*/
+
+//when at destination, turn and lower arm
+if(nextStep_dropOff == 1){
+  //drop off is on the left side of vehicle
+  LCD.clear();
+  LCD.print("Drop off:");
+  
+  if(dropoff_left == 1){
+    LCD.setCursor(0, 1);
+    LCD.print("Left");
+    delay(1000);
+    RCServo0.write(0); //rotate arm to left side
+    RCServo1.write(45); //lower arm
+    nextStep_dropOff = 0;
+    dropoff_left = 0;
     nextStep_clawOpen = 1;
   }
 
-//TODO - where does arm turn to/go to?
-
-//When at destination, open claw
-  if(nextStep_clawOpen == 1){
-    RCServo2.write(50);
-    LCD.clear();
-    LCD.print("claw opening");
+  //drop off is on the right side of vehicle
+  if(dropoff_right == 1){
+    LCD.setCursor(0, 1);
+    LCD.print("Right");
     delay(1000);
-    reset_arm = 1;
+    RCServo0.write(180); //rotate arm to right side
+    RCServo1.write(45); //lower arm
+    nextStep_dropOff = 0;
+    dropoff_right = 0;
+    nextStep_clawOpen = 1;
+  }
+}
+
+//When facing correct direction, open claw and drop off passenger
+  if(nextStep_clawOpen == 1){
+    LCD.clear();
+    LCD.print("Claw opening");
+    RCServo2.write(50);
+    delay(1000);
     nextStep_clawOpen = 0;
   }
 
+  reset_arm = 1; //if end of loop, reset and start again 
+  
   if(reset_arm == 1){
     //rest arm, claw and base to initial positions
+    LCD.clear();
+    LCD.print("Restart");
+    LCD.setCursor(0, 1);
+    LCD.print("New loop");
     RCServo0.write(90); //Position of the base starts in the middle
     RCServo1.write(0); //Arm starts up
     RCServo2.write(50); //Claw starts open
