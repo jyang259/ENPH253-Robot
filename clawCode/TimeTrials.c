@@ -2,11 +2,10 @@
 #include <phys253.h>
 
 //Pin allocations
-int irPin_right = 0; //ir pin - analog input
-int irPin_left = 1; //ir pin - analog input
-int irPin_arm = 2; //ir pin - analog input
-int detectionPin_passenger1 = 0; //microswitch pin - digital input 
-int detectionPin_passenger2 = 1; //microswitch pin - digital input
+int irPin_right = 1; //ir pin - analog input
+int irPin_left = 3; //ir pin - analog input
+int detectionPin_passenger1 = 4; //microswitch pin - digital input 
+int detectionPin_passenger2 = 6; //microswitch pin - digital input
 
 //IR detection on left and right of vehicle
 double leftIRSignal = 0;
@@ -15,11 +14,6 @@ int pickup_left = 0;
 int pickup_right = 0;
 int dropoff_left = 0;
 int dropoff_right = 0;
-
-//IR detection on arm
-double currentIRSignal_arm = 0;
-double strongestIRSignal_arm = 0;
-double locationStrongestIRSignal_arm = 0;
 
 //checkpoint tokens
 int nextStep_armLower = 0; //aimed at passenger, adjust arm height
@@ -31,7 +25,7 @@ int reset_arm = 0; //bring back arm and claw to initial positions
 
 int pos = 0; //variable servo angle
 int counter = 0; //counter for microswitch sensing
-double thresholdIRSignal = 3.0;
+double thresholdIRSignal = 1.0;
 
 void setup() {
 #include <phys253setup.txt>
@@ -55,12 +49,6 @@ void setup() {
 
 void loop() {
 
-  //get initial arm IR signal 
-  strongestIRSignal_arm = analogRead(irPin_arm) * 5.0 / 1024.0;
-  LCD.clear();
-  LCD.print(strongestIRSignal_arm);
-  delay(1000);
-
   LCD.clear();
   LCD.setCursor(0, 0);
   LCD.print("Left:");
@@ -75,7 +63,6 @@ void loop() {
   LCD.setCursor(8, 1);
   LCD.print(rightIRSignal);
   delay(200);
-  
   //TODO: at a certain strength, the car will stop...
 
   //Passenger on left side
@@ -96,36 +83,8 @@ void loop() {
     LCD.clear();
     LCD.print("Left side");
     delay(1000);
-    for (pos = 0; pos <= 30; pos++) {
-      RCServo0.write(pos);
-      LCD.clear();
-      LCD.setCursor(0, 0);
-      LCD.print("Pos:");
-      LCD.setCursor(5, 0);
-      LCD.print(pos);
-      currentIRSignal_arm = analogRead(irPin_arm) * 5.0 / 1024.0;
-      if (currentIRSignal_arm > strongestIRSignal_arm) {
-        strongestIRSignal_arm = currentIRSignal_arm;
-        locationStrongestIRSignal_arm = pos;
-        LCD.setCursor(0, 1);
-        LCD.print("L:");
-        LCD.setCursor(3, 1);
-        LCD.print(locationStrongestIRSignal_arm);
-        LCD.setCursor(6, 1);
-        LCD.print("V:");
-        LCD.setCursor(9, 1);
-        LCD.print(strongestIRSignal_arm);
-      }
-      delay(200);
-    }
     nextStep_armLower = 1;
     left_side = 0;
-    LCD.clear();
-    LCD.print("Loc:");
-    delay(1000);
-    LCD.setCursor(5, 0);
-    LCD.print(locationStrongestIRSignal_arm);
-    RCServo0.write(locationStrongestIRSignal_arm);
   }
   
 
@@ -135,36 +94,8 @@ void loop() {
     LCD.clear();
     LCD.print("Right side");
     delay(1000);
-    for (pos = 180; pos >= 150; pos--) {
-      RCServo0.write(pos);
-      LCD.clear();
-      LCD.setCursor(0, 0);
-      LCD.print("Pos:");
-      LCD.setCursor(5, 0);
-      LCD.print(pos);
-      currentIRSignal_arm = analogRead(irPin_arm) * 5.0 / 1024.0;
-      if (currentIRSignal_arm > strongestIRSignal_arm) {
-        strongestIRSignal_arm = currentIRSignal_arm;
-        locationStrongestIRSignal_arm = pos;
-        LCD.setCursor(0, 1);
-        LCD.print("L:");
-        LCD.setCursor(3, 1);
-        LCD.print(locationStrongestIRSignal_arm);
-        LCD.setCursor(6, 1);
-        LCD.print("V:");
-        LCD.setCursor(9, 1);
-        LCD.print(strongestIRSignal_arm);
-      }
-      delay(200);
-    }
     nextStep_armLower = 1;
     right_side = 0;
-    LCD.clear();
-    LCD.print("Loc:");
-    delay(1000);
-    LCD.setCursor(5, 0);
-    LCD.print(locationStrongestIRSignal_arm);
-    RCServo0.write(locationStrongestIRSignal_arm);
   }
 
   //Arm height - lower arm to height of passenger
