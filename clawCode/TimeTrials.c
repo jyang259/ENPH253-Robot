@@ -84,7 +84,7 @@ void loop() {
     LCD.print("Left side");
     delay(1000);
     nextStep_armLower = 1;
-    left_side = 0;
+    pickup_left = 0;
   }
   
 
@@ -95,7 +95,7 @@ void loop() {
     LCD.print("Right side");
     delay(1000);
     nextStep_armLower = 1;
-    right_side = 0;
+    pickup_right = 0;
   }
 
   //Arm height - lower arm to height of passenger
