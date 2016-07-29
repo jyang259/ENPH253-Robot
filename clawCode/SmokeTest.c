@@ -107,6 +107,7 @@ void loop() {
 //----------------Test 2 end-----------------
 
 
+
 //Test 3: Testing arm IR detection
 //Sweep for highest IR signal and return to location of highest signal detected 
 //----------------Test 3 start-----------------
@@ -228,6 +229,37 @@ void loop() {
     LCD.print("Done 3 tries");
 //----------------Test 4 end-----------------  
 
+//Test 5:Left IR and right IR test
+//----------------Test 5 start----------------- 
 
+  LCD.clear();
+  LCD.setCursor(0, 0);
+  LCD.print("Left:");
+  LCD.setCursor(0, 1);
+  LCD.print("Right:");
+  //read in IR detection from side detectors 
+  leftIRSignal = analogRead(irPin_left) * 5.0 / 1024.0;
+  LCD.setCursor(8, 0);
+  LCD.print(leftIRSignal);
+  delay(200);
+  rightIRSignal = analogRead(irPin_right) * 5.0 / 1024.0;
+  LCD.setCursor(8, 1);
+  LCD.print(rightIRSignal);
+  delay(200);
+  
+  //TODO: at a certain strength, the car will stop...
+
+  //Passenger on left side
+  if(leftIRSignal > thresholdIRSignal){
+    pickup_left = 1;
+  }
+
+  //Passenger on right side
+  if(rightIRSignal > thresholdIRSignal){
+    pickup_right = 1;
+  }
+
+//----------------Test 5 end-----------------   
+  
 }
 
